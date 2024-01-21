@@ -4,6 +4,7 @@
 
 import os
 import logging
+import datetime
 from datetime import timedelta
 from random import randrange
 
@@ -22,6 +23,27 @@ bot.remove_command("help")
 @bot.event
 async def on_ready():
     logger.info(f"{bot.user.name} is ready.")
+
+@bot.event
+async def on_member_join(member):
+    modChannel = bot.get_channel(int(os.getenv("MOD_CHANNEL")))
+    msg = f"User {member.name} has joined the server."
+    logger.info(msg)
+    await modChannel.send(msg)
+
+@bot.event
+async def on_member_remove(member):
+    modChannel = bot.get_channel(int(os.getenv("MOD_CHANNEL")))
+    msg=f"User {member.name} has left the server."
+    logger.info(msg)
+    await modChannel.send(msg)
+
+@bot.event
+async def on_member_ban(guild, user):
+        modChannel = bot.get_channel(int(os.getenv("MOD_CHANNEL")))
+        msg = f"User {user.name} has been banned."
+        await modChannel.send(msg)
+        logger.info(msg)    
 
 @bot.command()
 async def sneed(ctx):
