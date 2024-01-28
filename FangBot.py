@@ -4,7 +4,7 @@
 
 import os
 import logging
-import datetime
+import re
 from datetime import timedelta
 from random import randrange
 
@@ -45,6 +45,32 @@ async def on_member_ban(guild, user):
         await modChannel.send(msg)
         logger.info(msg)    
 
+@bot.event
+async def on_message(ctx):
+    if ctx.author == bot.user:
+        return
+    maxPing = int(os.getenv("MAX_PING"))
+    maxEmoji = int(os.getenv("MAX_EMOJI"))
+    emojiPattern = re.compile("<:[\S]+:[\d]+>")
+    msgEmoji = re.findall(emojiPattern, ctx.content)
+    if len(ctx.raw_mentions) > maxPing:
+        author = ctx.author
+        await ctx.delete()
+        await ctx.channel.send(f"{maxPing} mentions per post, {author.mention}.")
+    elif len(msgEmoji) > maxEmoji:
+        author = ctx.author
+        await ctx.delete()
+        await ctx.channel.send(f"{maxEmoji} emoji per post, {author.mention}.")
+    else:
+        await bot.process_commands(ctx)
+
+@bot.command(name='stickers', help='List all stickers by name and ID.')
+async def liststickers(c):
+    message = ''
+    for s in c.guild.stickers:
+        message = message + f'Sticker name: {s.name} with ID: {s.id}\n'
+    await c.reply(message)
+
 @bot.command()
 async def sneed(ctx):
     await ctx.send("What you s*need* are your meds, Anon.")
@@ -55,6 +81,22 @@ async def sneed(ctx):
     formattedChosenSecondsAmount = format(str(timedelta(seconds=chosenSecondsAmount)))
     logger.info(formattedChosenSecondsAmount)
     await member.timeout(startingDelta)
+
+@bot.command(name="winghug")
+async def winghug(ctx, *mentions:discord.Member):
+    s = await bot.get_guild(int(os.getenv("SERVER_ID"))).fetch_sticker(int(os.getenv("WINGHUG")))
+    ref = ctx.message.reference
+    if ref != None:
+        m = await ctx.channel.fetch_message(ref.message_id)
+        if m.author == bot.user:
+            await ctx.reply("I don't need to hug myself, dweeb!")
+        else:
+            await ctx.send(stickers=[s], reference=ref)
+    elif len(mentions) > 2:
+        userlist = ' '.join([u.mention for u in mentions])
+        await ctx.send(f'{userlist}', stickers=[s])
+    else:
+        await ctx.reply(stickers=[s])
 
 @bot.command()
 async def info(ctx):
