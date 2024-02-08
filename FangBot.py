@@ -5,6 +5,7 @@
 import os
 import logging
 import re
+import csv
 from datetime import timedelta
 from random import randrange
 
@@ -64,12 +65,42 @@ async def on_message(ctx):
     else:
         await bot.process_commands(ctx)
 
+@bot.event
+async def on_raw_reaction_add(payload):
+    msg = payload.message_id
+    uid = payload.user_id
+    emoji = payload.emoji.name
+    if msg == int(os.getenv("ROLES_POST")):
+        server = bot.get_guild(int(os.getenv("SERVER_ID")))
+        user = server.get_member(uid)
+        with open('roles.csv', mode='r') as f:
+            reader = csv.reader(f)
+            rolelist = {r[0]:r[1] for r in reader}
+            if emoji in rolelist:
+                role = server.get_role(int(rolelist[emoji]))
+                await user.add_roles(role)
+
+@bot.event
+async def on_raw_reaction_remove(payload):
+    msg = payload.message_id
+    uid = payload.user_id
+    emoji = payload.emoji.name
+    if msg == int(os.getenv("ROLES_POST")):
+        server = bot.get_guild(int(os.getenv("SERVER_ID")))
+        user = server.get_member(uid)
+        with open('roles.csv', mode='r') as f:
+            reader = csv.reader(f)
+            rolelist = {r[0]:r[1] for r in reader}
+            if emoji in rolelist:
+                role = server.get_role(int(rolelist[emoji]))
+                await user.remove_roles(role)
+
 @bot.command(name='stickers', help='List all stickers by name and ID.')
-async def liststickers(c):
+async def liststickers(ctx):
     message = ''
-    for s in c.guild.stickers:
+    for s in ctx.guild.stickers:
         message = message + f'Sticker name: {s.name} with ID: {s.id}\n'
-    await c.reply(message)
+    await ctx.reply(message)
 
 @bot.command()
 async def sneed(ctx):
