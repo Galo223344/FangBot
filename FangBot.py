@@ -98,14 +98,7 @@ async def on_raw_reaction_remove(payload):
                 role = server.get_role(int(rolelist[emoji]))
                 await user.remove_roles(role)
                 logger.info(f"{role.name} was removed from {user.name}.")
-
-@bot.command(name='stickers', help='List all stickers by name and ID.')
-async def liststickers(ctx):
-    message = ''
-    for s in ctx.guild.stickers:
-        message = message + f'Sticker name: {s.name} with ID: {s.id}\n'
-    await ctx.reply(message)
-
+                
 @bot.command()
 async def sneed(ctx):
     await ctx.send("What you s*need* are your meds, Anon.")
