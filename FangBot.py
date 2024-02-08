@@ -14,6 +14,12 @@ from discord.ext import commands as dc
 
 # Perform some configuration for our application.
 botToken = os.getenv("TOKEN")
+modChan = int(os.getenv("MOD_CHANNEL"))
+maxPing = int(os.getenv("MAX_PING"))
+maxEmoji = int(os.getenv("MAX_EMOJI"))
+serverId = int(os.getenv("SERVER_ID"))
+welcomePost = int(os.getenv("ROLES_POST"))
+winghugId = int(os.getenv("WINGHUG_ID"))
 intents = discord.Intents.all()
 bot = dc.Bot(command_prefix="!", intents=intents)
 logger = logging.getLogger('discord')
@@ -27,21 +33,21 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member):
-    modChannel = bot.get_channel(int(os.getenv("MOD_CHANNEL")))
+    modChannel = bot.get_channel(modChan)
     msg = f"User {member.name} has joined the server."
     logger.info(msg)
     await modChannel.send(msg)
 
 @bot.event
 async def on_member_remove(member):
-    modChannel = bot.get_channel(int(os.getenv("MOD_CHANNEL")))
+    modChannel = bot.get_channel(modChan)
     msg=f"User {member.name} has left the server."
     logger.info(msg)
     await modChannel.send(msg)
 
 @bot.event
 async def on_member_ban(guild, user):
-        modChannel = bot.get_channel(int(os.getenv("MOD_CHANNEL")))
+        modChannel = bot.get_channel(modChan)
         msg = f"User {user.name} has been banned."
         logger.info(msg)
         await modChannel.send(msg)
@@ -50,8 +56,6 @@ async def on_member_ban(guild, user):
 async def on_message(ctx):
     if ctx.author == bot.user:
         return
-    maxPing = int(os.getenv("MAX_PING"))
-    maxEmoji = int(os.getenv("MAX_EMOJI"))
     emojiPattern = re.compile("<:[\S]+:[\d]+>")
     msgEmoji = re.findall(emojiPattern, ctx.content)
     if len(ctx.raw_mentions) > maxPing:
@@ -72,8 +76,8 @@ async def on_raw_reaction_add(payload):
     msg = payload.message_id
     uid = payload.user_id
     emoji = payload.emoji.name
-    if msg == int(os.getenv("ROLES_POST")):
-        server = bot.get_guild(int(os.getenv("SERVER_ID")))
+    if msg == welcomePost:
+        server = bot.get_guild(serverId)
         user = server.get_member(uid)
         with open('roles.csv', mode='r') as f:
             reader = csv.reader(f)
@@ -88,8 +92,8 @@ async def on_raw_reaction_remove(payload):
     msg = payload.message_id
     uid = payload.user_id
     emoji = payload.emoji.name
-    if msg == int(os.getenv("ROLES_POST")):
-        server = bot.get_guild(int(os.getenv("SERVER_ID")))
+    if msg == welcomePost:
+        server = bot.get_guild(serverId)
         user = server.get_member(uid)
         with open('roles.csv', mode='r') as f:
             reader = csv.reader(f)
@@ -119,7 +123,7 @@ async def sneed(ctx):
 
 @bot.command(name="winghug")
 async def winghug(ctx, *mentions:discord.Member):
-    s = await bot.get_guild(int(os.getenv("SERVER_ID"))).fetch_sticker(int(os.getenv("WINGHUG_ID")))
+    s = await bot.get_guild(serverId).fetch_sticker(winghugId)
     ref = ctx.message.reference
     if ref != None:
         m = await ctx.channel.fetch_message(ref.message_id)
