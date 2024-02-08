@@ -43,8 +43,8 @@ async def on_member_remove(member):
 async def on_member_ban(guild, user):
         modChannel = bot.get_channel(int(os.getenv("MOD_CHANNEL")))
         msg = f"User {user.name} has been banned."
+        logger.info(msg)
         await modChannel.send(msg)
-        logger.info(msg)    
 
 @bot.event
 async def on_message(ctx):
@@ -58,10 +58,12 @@ async def on_message(ctx):
         author = ctx.author
         await ctx.delete()
         await ctx.channel.send(f"{maxPing} mentions per post, {author.mention}.")
+        logger.info(f"{author.name} was warned for mass pings.")
     elif len(msgEmoji) > maxEmoji:
         author = ctx.author
         await ctx.delete()
         await ctx.channel.send(f"{maxEmoji} emoji per post, {author.mention}.")
+        logger.info(f"{author.name} was warned for mass emoji.")
     else:
         await bot.process_commands(ctx)
 
@@ -79,6 +81,7 @@ async def on_raw_reaction_add(payload):
             if emoji in rolelist:
                 role = server.get_role(int(rolelist[emoji]))
                 await user.add_roles(role)
+                logger.info(f"{role.name} was added to {user.name}.")
 
 @bot.event
 async def on_raw_reaction_remove(payload):
@@ -94,6 +97,7 @@ async def on_raw_reaction_remove(payload):
             if emoji in rolelist:
                 role = server.get_role(int(rolelist[emoji]))
                 await user.remove_roles(role)
+                logger.info(f"{role.name} was removed from {user.name}.")
 
 @bot.command(name='stickers', help='List all stickers by name and ID.')
 async def liststickers(ctx):
@@ -115,7 +119,7 @@ async def sneed(ctx):
 
 @bot.command(name="winghug")
 async def winghug(ctx, *mentions:discord.Member):
-    s = await bot.get_guild(int(os.getenv("SERVER_ID"))).fetch_sticker(int(os.getenv("WINGHUG_STICKER_ID")))
+    s = await bot.get_guild(int(os.getenv("SERVER_ID"))).fetch_sticker(int(os.getenv("WINGHUG_ID")))
     ref = ctx.message.reference
     if ref != None:
         m = await ctx.channel.fetch_message(ref.message_id)
@@ -148,6 +152,9 @@ All commands must start with !
 List of commands:
 - sneed
     Sneed's Feed & Seed (Formerly Chuck's)
+- winghug
+    Send a user a winghug!
+    Reply to a post to hug that user, or @ping users to hug them. Do neither and Fang will hug you.
 - help
     This very message that you are seeing.
 - info
