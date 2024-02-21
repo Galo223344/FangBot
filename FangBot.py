@@ -137,7 +137,7 @@ async def tail(ctx):
     with open('tail.txt', mode='r') as f:
             winner = False
             lines = f.read().splitlines()
-            if random.random() > 0.0001:
+            if random.random() > 0.001:
                 response = random.choice(lines[1:])
             else:
                 winner = True
