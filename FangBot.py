@@ -6,6 +6,7 @@ import os
 import logging
 import re
 import csv
+import random
 from datetime import timedelta
 from random import randrange
 
@@ -15,6 +16,7 @@ from discord.ext import commands as dc
 # Perform some configuration for our application.
 botToken = os.getenv("TOKEN")
 modChan = int(os.getenv("MOD_CHANNEL"))
+modRole = int(os.getenv("MOD_ROLE"))
 maxPing = int(os.getenv("MAX_PING"))
 maxEmoji = int(os.getenv("MAX_EMOJI"))
 serverId = int(os.getenv("SERVER_ID"))
@@ -26,6 +28,15 @@ logger = logging.getLogger('discord')
 
 # Remove the built in help command so that we can define a custom help command.
 bot.remove_command("help")
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, dc.CommandNotFound):
+        return #silently ignore the user
+    elif isinstance(error, dc.CommandOnCooldown):
+        await ctx.reply(error)
+    else:
+        await ctx.reply(f"Unexpected error: {error}")
 
 @bot.event
 async def on_ready():
@@ -102,17 +113,52 @@ async def on_raw_reaction_remove(payload):
                 role = server.get_role(int(rolelist[emoji]))
                 await user.remove_roles(role)
                 logger.info(f"{role.name} was removed from {user.name}.")
-                
-@bot.command()
+
+@bot.command(name="snoot")
+async def snoot(ctx):
+    with open('snoot.txt', mode='r') as f:
+            lines = f.read().splitlines()
+            response = random.choice(lines)
+            await ctx.send(response)
+            await ctx.send("<:glorysnoot:870704286366040064>")
+
+@bot.command(name="nuggie")
+async def nuggie(ctx):
+    with open('nuggie.txt', mode='r') as f:
+            lines = f.read().splitlines()
+            response = random.choice(lines)
+            await ctx.send("<:dinonugget:870729745925562398>")
+            await ctx.send(response)
+            await ctx.send("<:fangnugdevour:936042789605613578>")
+
+@dc.cooldown(rate=1, per=60, type=dc.BucketType.user)
+@bot.command(name="tail")
+async def tail(ctx):
+    with open('tail.txt', mode='r') as f:
+            winner = False
+            lines = f.read().splitlines()
+            if random.random() > 0.0001:
+                response = random.choice(lines[1:])
+            else:
+                winner = True
+                response = lines[0]
+            await ctx.send("<:fangsurprised:870685719528615968>")
+            await ctx.send(response)
+            if winner:
+                logger.info(f"{ctx.author.name} won the tail roulette.")
+
+@bot.command(name="sneed")
 async def sneed(ctx):
     await ctx.send("What you s*need* are your meds, Anon.")
     member = ctx.author
+    isJanny = member.get_role(modRole)
     startingDelta = timedelta(days=1, minutes=1)
     totalSeconds = startingDelta.total_seconds()
     chosenSecondsAmount = randrange(1, totalSeconds)
     formattedChosenSecondsAmount = format(str(timedelta(seconds=chosenSecondsAmount)))
     logger.info(formattedChosenSecondsAmount)
-    await member.timeout(startingDelta)
+    if isJanny == None:
+        await member.timeout(startingDelta)
 
 @bot.command(name="winghug")
 async def winghug(ctx, *mentions:discord.Member):
@@ -129,6 +175,21 @@ async def winghug(ctx, *mentions:discord.Member):
         await ctx.send(f'{userlist}', stickers=[s])
     else:
         await ctx.reply(stickers=[s])
+
+@bot.command(name='stickers')
+async def liststickers(ctx):
+    if ctx.author.get_role(modRole) == None:
+        await ctx.reply("Only moderators can use this command.")
+        return
+    message = ''
+    for s in ctx.guild.stickers:
+        stickerinfo = f'{s.name}: {s.id}\n'
+        if len(message) + len(stickerinfo) > 2000:
+            await ctx.send(message)
+            message = stickerinfo
+        else:
+            message += stickerinfo
+    await ctx.send(message)
 
 @bot.command()
 async def info(ctx):
@@ -147,6 +208,12 @@ async def help(ctx):
     message = """
 All commands must start with !
 List of commands:
+- snoot
+    Boop that snoot!
+- nuggie
+    Give Fang a nuggie
+- tail
+    Don't let Ripley catch you
 - sneed
     Sneed's Feed & Seed (Formerly Chuck's)
 - winghug
