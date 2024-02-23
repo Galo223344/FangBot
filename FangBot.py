@@ -6,7 +6,7 @@ import os
 import logging
 import re
 import csv
-import random 
+import random
 from datetime import timedelta
 from random import randrange
 
@@ -22,7 +22,15 @@ maxEmoji = int(os.getenv("MAX_EMOJI"))
 serverId = int(os.getenv("SERVER_ID"))
 welcomePost = int(os.getenv("ROLES_POST"))
 winghugId = int(os.getenv("WINGHUG_ID"))
-intents = discord.Intents.all()
+intents = discord.Intents(
+    guilds=True,
+    members=True,
+    moderation=True,
+    emojis_and_stickers=True,
+    guild_messages=True,
+    guild_reactions=True,
+    message_content=True
+)
 bot = dc.Bot(command_prefix="!", intents=intents)
 logger = logging.getLogger('discord')
 
@@ -183,12 +191,12 @@ async def sneed(ctx):
     await ctx.send("What you s*need* are your meds, Anon.")
     member = ctx.author
     isJanny = member.get_role(modRole)
-    startingDelta = timedelta(days=1, minutes=1)
-    totalSeconds = startingDelta.total_seconds()
-    chosenSecondsAmount = randrange(1, totalSeconds)
-    formattedChosenSecondsAmount = format(str(timedelta(seconds=chosenSecondsAmount)))
-    logger.info(formattedChosenSecondsAmount)
     if isJanny == None:
+        startingDelta = timedelta(days=1, minutes=1)
+        totalSeconds = startingDelta.total_seconds()
+        chosenSecondsAmount = randrange(1, totalSeconds)
+        formattedChosenSecondsAmount = format(str(timedelta(seconds=chosenSecondsAmount)))
+        logger.info(formattedChosenSecondsAmount)
         await member.timeout(startingDelta)
 
 @bot.command(name="winghug")
@@ -198,7 +206,7 @@ async def winghug(ctx, *mentions:discord.Member):
     if ref != None:
         m = await ctx.channel.fetch_message(ref.message_id)
         if m.author == bot.user:
-            await ctx.reply("I don't need to hug myself, dweeb!")
+            await ctx.reply("I'm not hugging myself, dweeb!")
         else:
             await ctx.send(stickers=[s], reference=ref)
     elif len(mentions) > 2:
@@ -210,7 +218,6 @@ async def winghug(ctx, *mentions:discord.Member):
 @bot.command(name='stickers')
 async def liststickers(ctx):
     if ctx.author.get_role(modRole) == None:
-        await ctx.reply("Only moderators can use this command.")
         return
     message = ''
     for s in ctx.guild.stickers:
@@ -249,7 +256,11 @@ List of commands:
     Sneed's Feed & Seed (Formerly Chuck's)
 - winghug
     Send a user a winghug!
-    Reply to a post to hug that user, or @ping users to hug them. Do neither and Fang will hug you.
+    Reply to a post to hug that user, or @ping users to hug them.
+    Do neither and Fang will hug you.
+- stickers
+    Returns a list of all stickers on the server with their sticker IDs.
+    Moderators only, since this is only for bot configuration.
 - help
     This very message that you are seeing.
 - info
