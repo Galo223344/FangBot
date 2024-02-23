@@ -8,7 +8,6 @@ import re
 import csv
 import random 
 from datetime import timedelta
-from datetime import datetime
 from random import randrange
 
 import discord
@@ -47,39 +46,52 @@ async def on_ready():
 async def on_member_join(member):
     modChannel = bot.get_channel(modChan)
     embed = discord.Embed(
-        title=f"{member.display_name} has joined the server",
+        description=f"📥{member.mention} has joined the server",
         color=discord.Color.green()
     )
+    embed.set_thumbnail(url=member.avatar.url)
     embed.set_author(name=member.name, icon_url=member.avatar.url)
     embed.add_field(name="User ID", value= member.id)
-    embed.add_field(name="Account Create Date", value=member.created_at.strftime("%Y-%m-%d, %H:%M"))
-    embed.set_footer(text=f"Joined on: {member.joined_at.strftime('%Y-%m-%d, %H:%M')}.")
+    embed.add_field(name="Account Creation", value=member.created_at.strftime("%Y-%m-%d, %H:%M"))
     await modChannel.send(embed=embed)
 
 @bot.event
 async def on_member_remove(member):
     modChannel = bot.get_channel(modChan)
     embed = discord.Embed(
-        title=f"{member.display_name} has left the server",
+        description=f"📤{member.mention} has left the server",
         color=discord.Color.orange()
     )
+    embed.set_thumbnail(url=member.avatar.url)
     embed.set_author(name=member.name, icon_url=member.avatar.url)
     embed.add_field(name="User ID", value= member.id)
-    embed.add_field(name="Account Create Date", value=member.created_at.strftime("%Y-%m-%d, %H:%M"))
-    embed.set_footer(text=f"Left on: {datetime.now().strftime('%Y-%m-%d, %H:%M')}.")
+    embed.add_field(name="Account Creation", value=member.created_at.strftime("%Y-%m-%d, %H:%M"))
     await modChannel.send(embed=embed)
 
 @bot.event
 async def on_member_ban(guild, user):
     modChannel = bot.get_channel(modChan)
     embed = discord.Embed(
-        title=f"{user.display_name} has been banned from the server",
+        description=f"🔒{user.mention} has been banned from the server",
         color=discord.Color.red()
     )
+    embed.set_thumbnail(url=user.avatar.url)
     embed.set_author(name=user.name, icon_url=user.avatar.url)
     embed.add_field(name="User ID", value= user.id)
-    embed.add_field(name="Account Create Date", value=user.created_at.strftime("%Y-%m-%d, %H:%M"))
-    embed.set_footer(text=f"Banned on: {datetime.now().strftime('%Y-%m-%d, %H:%M')}.")
+    embed.add_field(name="Account Creation", value=user.created_at.strftime("%Y-%m-%d, %H:%M"))
+    await modChannel.send(embed=embed)
+
+@bot.event
+async def on_member_unban(guild, user):
+    modChannel = bot.get_channel(modChan)
+    embed = discord.Embed(
+        description=f"🔓{user.mention} has been unbanned from the server",
+        color=discord.Color.blue()
+    )
+    embed.set_thumbnail(url=user.avatar.url)
+    embed.set_author(name=user.name, icon_url=user.avatar.url)
+    embed.add_field(name="User ID", value= user.id)
+    embed.add_field(name="Account Creation", value=user.created_at.strftime("%Y-%m-%d, %H:%M"))
     await modChannel.send(embed=embed)
 
 @bot.event
@@ -209,18 +221,6 @@ async def liststickers(ctx):
         else:
             message += stickerinfo
     await ctx.send(message)
-
-# @bot.command(name='embed')
-# async def testembed(ctx):
-#     embed = discord.Embed(
-#         title=f"{ctx.author.display_name} has joined the server",
-#         color=discord.Color.green()
-#     )
-#     embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
-#     embed.add_field(name="User ID", value= ctx.author.id)
-#     embed.add_field(name="Account Create Date", value=ctx.author.created_at.strftime("%Y-%m-%d, %H:%M"))
-#     embed.set_footer(text=f"Joined on: {ctx.author.joined_at.strftime('%Y-%m-%d, %H:%M')}.")
-#     await ctx.reply(embed=embed)
 
 @bot.command()
 async def info(ctx):
