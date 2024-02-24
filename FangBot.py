@@ -9,9 +9,12 @@ import csv
 import random
 from datetime import timedelta
 from random import randrange
+from dotenv import load_dotenv
 
 import discord
 from discord.ext import commands as dc
+
+load_dotenv()
 
 # Perform some configuration for our application.
 botToken = os.getenv("TOKEN")
