@@ -129,7 +129,7 @@ async def on_raw_reaction_add(payload):
     if msg == welcomePost:
         server = bot.get_guild(serverId)
         user = server.get_member(uid)
-        with open('roles.csv', mode='r') as f:
+        with open('roles.csv', mode='r', encoding='utf-8') as f:
             reader = csv.reader(f)
             rolelist = {r[0]:r[1] for r in reader}
             if emoji in rolelist:
@@ -145,7 +145,7 @@ async def on_raw_reaction_remove(payload):
     if msg == welcomePost:
         server = bot.get_guild(serverId)
         user = server.get_member(uid)
-        with open('roles.csv', mode='r') as f:
+        with open('roles.csv', mode='r', encoding='utf-8') as f:
             reader = csv.reader(f)
             rolelist = {r[0]:r[1] for r in reader}
             if emoji in rolelist:
