@@ -216,7 +216,7 @@ async def winghug(ctx, *mentions:discord.Member):
             await ctx.reply("I'm not hugging myself, dweeb!")
         else:
             await ctx.send(stickers=[s], reference=ref)
-    elif len(mentions) > 2:
+    elif len(mentions) > 0:
         userlist = ' '.join([u.mention for u in mentions])
         await ctx.send(f'{userlist}', stickers=[s])
     else:
