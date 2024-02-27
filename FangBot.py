@@ -25,6 +25,9 @@ maxEmoji = int(os.getenv("MAX_EMOJI"))
 serverId = int(os.getenv("SERVER_ID"))
 welcomePost = int(os.getenv("ROLES_POST"))
 winghugId = int(os.getenv("WINGHUG_ID"))
+rulesChanId = int(os.getenv("RULES_CHANNEL_ID"))
+rulesPostId = int(os.getenv("RULES_POST_ID"))
+winghugId = int(os.getenv("WINGHUG_ID"))
 intents = discord.Intents(
     guilds=True,
     members=True,
@@ -231,6 +234,46 @@ async def liststickers(ctx):
         else:
             message += stickerinfo
     await ctx.send(message)
+
+@bot.command(name='postrules')
+async def postrules(ctx):
+    global welcomePost
+    global rulesPostId
+    if ctx.author.get_role(modRole) == None:
+        return
+    rulesChan = await bot.fetch_channel(rulesChanId)
+    with open('rules.txt', mode='r') as r:
+        rules = r.read()
+        embed = discord.Embed(
+            title='Welcome to the unofficial Snoot Game/Wani server!',
+            description=rules,
+            color=discord.Color.green()
+        )
+        embed.set_thumbnail(url='https://snootbooru.com/data/posts/49_662644da4403213e.png')
+        if rulesPostId == 0:
+            m = await rulesChan.send(embed=embed)
+            rulesPostId = m.id
+        else:
+            post = await rulesChan.fetch_message(rulesPostId)
+            await post.edit(embed=embed)
+    with open('roles.csv', mode='r', encoding='utf=8') as r:
+        reader = csv.reader(r)
+        rolelist = list(reader)[1:]
+        embedDesc = '✅: I have read and agree to abide by the rules of the server.\n\nReact with the listed emoji to get a role for various event pings.'
+        for role in rolelist:
+            embedDesc += f"\n{role[2]}: {role[3]}"
+        embed = discord.Embed(
+            title='Optional roles for event pings.',
+            description=embedDesc,
+            color = discord.Color.blue()
+        )
+        if welcomePost == 0:
+            m = await rulesChan.send(embed=embed)
+            welcomePost = m.id
+        else:
+            post = await rulesChan.fetch_message(welcomePost)
+            await post.edit(embed=embed)
+
 
 @bot.command()
 async def info(ctx):
