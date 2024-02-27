@@ -198,9 +198,10 @@ async def sneed(ctx):
         startingDelta = timedelta(days=1, minutes=1)
         totalSeconds = startingDelta.total_seconds()
         chosenSecondsAmount = randrange(1, totalSeconds)
+        timeoutDelta = timedelta(seconds=chosenSecondsAmount)
         formattedChosenSecondsAmount = format(str(timedelta(seconds=chosenSecondsAmount)))
-        logger.info(formattedChosenSecondsAmount)
-        await member.timeout(startingDelta)
+        logger.info(f"{member} was timed out for {formattedChosenSecondsAmount} seconds")
+        await member.timeout(timeoutDelta)
 
 @bot.command(name="winghug")
 async def winghug(ctx, *mentions:discord.Member):
