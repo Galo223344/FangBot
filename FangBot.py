@@ -47,6 +47,9 @@ bot.remove_command("help")
 async def on_command_error(ctx, error):
     if isinstance(error, dc.CommandNotFound):
         return #silently ignore the user
+    elif isinstance(error, dc.MemberNotFound):
+        await ctx.reply("I couldn't find some of those people, you dork. Are you sure everyone you pinged is in the server?")
+        return
     elif isinstance(error, dc.CommandOnCooldown):
         await ctx.reply(error)
     else:
