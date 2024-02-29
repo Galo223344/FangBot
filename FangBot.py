@@ -201,19 +201,22 @@ async def tail(ctx):
 
 @bot.command(name="sneed")
 async def sneed(ctx):
-    s = await bot.get_guild(serverId).fetch_sticker(medsId)
     userName = ctx.author.nick or ctx.author.display_name
     member = ctx.author
     isJanny = member.get_role(modRole)
-    startingDelta = timedelta(days=1, minutes=1)
-    totalSeconds = startingDelta.total_seconds()
-    chosenSecondsAmount = randrange(1, totalSeconds)
-    timeoutDelta = timedelta(seconds=chosenSecondsAmount)
-    formattedChosenSecondsAmount = format(str(timedelta(seconds=chosenSecondsAmount)))
-    logger.info(f"{member} was timed out for {formattedChosenSecondsAmount} seconds")
-    await ctx.send(f"What you s*need* are your meds, {userName}. These pills should keep you medicated for {formattedChosenSecondsAmount}!", stickers=[s])
+    baseMsg = f"What you s*need* are your meds, {userName}." 
     if isJanny == None:
+        s = await bot.get_guild(serverId).fetch_sticker(medsId)
+        startingDelta = timedelta(days=1, minutes=1)
+        totalSeconds = startingDelta.total_seconds()
+        chosenSecondsAmount = randrange(1, totalSeconds)
+        timeoutDelta = timedelta(seconds=chosenSecondsAmount)
+        formattedChosenSecondsAmount = format(str(timedelta(seconds=chosenSecondsAmount)))
+        await ctx.send(f"{baseMsg} These pills should keep you medicated for {formattedChosenSecondsAmount}!", stickers=[s])
         await member.timeout(timeoutDelta)
+        logger.info(f"{member} was timed out for {formattedChosenSecondsAmount} seconds")
+    else:
+        await ctx.send(f"{baseMsg} These pills won't help a janny. You're on your own, dweeb.")
 
 @bot.command(name="winghug")
 async def winghug(ctx, *mentions:discord.Member):
