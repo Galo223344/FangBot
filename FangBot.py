@@ -219,8 +219,6 @@ async def sneed(ctx):
 async def winghug(ctx, *mentions:discord.Member):
     s = await bot.get_guild(serverId).fetch_sticker(winghugId)
     ref = ctx.message.reference
-    print(bot.user.id)
-    print(mentions)
     if ref != None:
         m = await ctx.channel.fetch_message(ref.message_id)
         if m.author == bot.user:
