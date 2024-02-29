@@ -27,7 +27,7 @@ welcomePost = int(os.getenv("ROLES_POST"))
 winghugId = int(os.getenv("WINGHUG_ID"))
 rulesChanId = int(os.getenv("RULES_CHANNEL_ID"))
 rulesPostId = int(os.getenv("RULES_POST_ID"))
-winghugId = int(os.getenv("WINGHUG_ID"))
+medsId = int(os.getenv("TAKEMEDS_ID"))
 intents = discord.Intents(
     guilds=True,
     members=True,
@@ -37,7 +37,7 @@ intents = discord.Intents(
     guild_reactions=True,
     message_content=True
 )
-bot = dc.Bot(command_prefix="!", intents=intents)
+bot = dc.Bot(command_prefix="!", intents=intents, case_insensitive=True)
 logger = logging.getLogger('discord')
 
 # Remove the built in help command so that we can define a custom help command.
@@ -53,7 +53,11 @@ async def on_command_error(ctx, error):
     elif isinstance(error, dc.CommandOnCooldown):
         await ctx.reply(error)
     else:
-        await ctx.reply(f"Unexpected error: {error}")
+        errorMsg = str(error)
+        errorMsg = re.sub(r'<@!?(\d+)>', r'@member\1', errorMsg) #strip user pings
+        errorMsg = re.sub(r'<@&(\d+)>', r'@role\1', errorMsg) #strip role pings
+        errorMsg = re.sub(r'<#(\d+)>', r'#channel\1', errorMsg) #strip channel pings, probably unnecessary but what the hell
+        await ctx.reply(f"Unexpected error: {errorMsg}")
 
 @bot.event
 async def on_ready():
@@ -197,17 +201,22 @@ async def tail(ctx):
 
 @bot.command(name="sneed")
 async def sneed(ctx):
-    await ctx.send("What you s*need* are your meds, Anon.")
+    userName = ctx.author.nick or ctx.author.display_name
     member = ctx.author
     isJanny = member.get_role(modRole)
+    baseMsg = f"What you s*need* are your meds, {userName}." 
     if isJanny == None:
+        s = await bot.get_guild(serverId).fetch_sticker(medsId)
         startingDelta = timedelta(days=1, minutes=1)
         totalSeconds = startingDelta.total_seconds()
         chosenSecondsAmount = randrange(1, totalSeconds)
         timeoutDelta = timedelta(seconds=chosenSecondsAmount)
         formattedChosenSecondsAmount = format(str(timedelta(seconds=chosenSecondsAmount)))
-        logger.info(f"{member} was timed out for {formattedChosenSecondsAmount} seconds")
+        await ctx.send(f"{baseMsg} These pills should keep you medicated for {formattedChosenSecondsAmount}!", stickers=[s])
         await member.timeout(timeoutDelta)
+        logger.info(f"{member} was timed out for {formattedChosenSecondsAmount} seconds")
+    else:
+        await ctx.send(f"{baseMsg} These pills won't help a janny. You're on your own, dweeb.")
 
 @bot.command(name="winghug")
 async def winghug(ctx, *mentions:discord.Member):
@@ -220,8 +229,11 @@ async def winghug(ctx, *mentions:discord.Member):
         else:
             await ctx.send(stickers=[s], reference=ref)
     elif len(mentions) > 0:
-        userlist = ' '.join([u.mention for u in mentions])
-        await ctx.send(f'{userlist}', stickers=[s])
+        if any(m.id == bot.user.id for m in mentions):
+            await ctx.reply("I'm not hugging myself, dweeb!")
+        else:
+            userlist = ' '.join([u.mention for u in mentions])
+            await ctx.send(f'{userlist}', stickers=[s])
     else:
         await ctx.reply(stickers=[s])
 
