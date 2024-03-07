@@ -28,6 +28,7 @@ winghugId = int(os.getenv("WINGHUG_ID"))
 rulesChanId = int(os.getenv("RULES_CHANNEL_ID"))
 rulesPostId = int(os.getenv("RULES_POST_ID"))
 medsId = int(os.getenv("TAKEMEDS_ID"))
+mascotRole = int(os.getenv("MASCOT_ROLE"))
 intents = discord.Intents(
     guilds=True,
     members=True,
@@ -204,8 +205,17 @@ async def sneed(ctx):
     userName = ctx.author.nick or ctx.author.display_name
     member = ctx.author
     isJanny = member.get_role(modRole)
+    isMascot = member.get_role(mascotRole)
     baseMsg = f"What you s*need* are your meds, {userName}." 
-    if isJanny == None:
+    if isMascot != None:
+        diceRoll = random.random()
+        if diceRoll < 0.00001:
+            await ctx.reply("Bad Corndoug, get away from the pill bottle!")
+        elif diceRoll < 0.0001:
+            await ctx.reply("Bad Corndog, get away from the pill bottle!")
+        else:
+            await ctx.reply("Bad cat, get away from the pill bottle!")
+    elif isJanny == None:
         s = await bot.get_guild(serverId).fetch_sticker(medsId)
         startingDelta = timedelta(days=1, minutes=1)
         totalSeconds = startingDelta.total_seconds()
@@ -215,6 +225,7 @@ async def sneed(ctx):
         await ctx.send(f"{baseMsg} These pills should keep you medicated for {formattedChosenSecondsAmount}!", stickers=[s])
         await member.timeout(timeoutDelta)
         logger.info(f"{member} was timed out for {formattedChosenSecondsAmount} seconds")
+
     else:
         await ctx.send(f"{baseMsg} These pills won't help a janny. You're on your own, dweeb.")
 
