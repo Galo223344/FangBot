@@ -120,7 +120,7 @@ async def on_member_unban(guild, user):
 async def on_message(ctx):
     if ctx.author == bot.user:
         return
-    emojiPattern = re.compile("<:[\S]+:[\d]+>")
+    emojiPattern = re.compile("<:[\w]+:[\d]+>")
     msgEmoji = re.findall(emojiPattern, ctx.content)
     if len(ctx.raw_mentions) > maxPing:
         author = ctx.author
